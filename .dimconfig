@@ -1,0 +1,8 @@
+#!perl
+# This file is managed by /Users/tarara/perl5/perlbrew/perls/perl-5.12.2/bin/dim.
+{
+  dist => 'Log::Fibre',
+  distdir => 'Log-Fibre',
+  module => 'Log::Fibre',
+  template => 'DefaultMB'
+}
