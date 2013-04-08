@@ -25,27 +25,34 @@ sub fibre {
         last_method => undef, last_log => undef,
     };
     $fibre->{count}++;
+    $fibre->{last_method} = $meth;
+    $fibre->{last_log} = [@_];
 
     if ($option->{max} && $fibre->{count} >= $option->{max}) {
-        $self->{logger}->$meth(@_);
-        delete $self->{fibres}{$fibre_name};
+        $self->_flush_fibre($fibre_name);
     } elsif ($option->{duration} &&
              $time - $fibre->{start_time} >= $option->{duration}) {
-        $self->{logger}->$meth(@_);
-        delete $self->{fibres}{$fibre_name};
-    } else {
-        $fibre->{last_method} = $meth;
-        $fibre->{last_log} = [@_];
+        $self->_flush_fibre($fibre_name);
     }
+}
+
+sub _flush_fibre {
+    my ($self, $fibre_name) = @_;
+    my $fibre = delete $self->{fibres}{$fibre_name};
+    my $meth = $fibre->{last_method};
+
+    # Apend info
+    if ($fibre->{count} > 1) {
+        my $time = time - $fibre->{start_time};
+        $fibre->{last_log}[-1] .= " ($fibre->{count} lines / $time sec)";
+    }
+
+    $self->{logger}->$meth(@{$fibre->{last_log}});
 }
 
 sub DESTROY {
     my $self = shift;
-    for (keys %{$self->{fibres}}) {
-        my $fibre = $self->{fibres}{$_};
-        my $meth = $fibre->{last_method};
-        $self->{logger}->$meth(@{$fibre->{last_log}});
-    }
+    $self->_flush_fibre($_) for keys %{$self->{fibres}};
 }
 
 sub AUTOLOAD {
