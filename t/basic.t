@@ -32,6 +32,8 @@ use Time::HiRes ();
     like $logger->{warn}[0], qr/log1-3/;
     like $logger->{warn}[1], qr/log1-6/;
     like $logger->{warn}[2], qr/log2-6/;
+
+    note $_ for @{$logger->{warn}};
 }
 
 {
@@ -46,6 +48,8 @@ use Time::HiRes ();
 
     cmp_ok +(grep {/log1/} @{$logger->{info}}), '<=', 3;
     cmp_ok +(grep {/log2/} @{$logger->{info}}), '<=', 2;
+
+    note $_ for @{$logger->{info}};
 }
 
 done_testing;
