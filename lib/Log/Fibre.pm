@@ -50,10 +50,12 @@ sub _flush_fibre {
     $self->{logger}->$meth(@{$fibre->{last_log}});
 }
 
-sub DESTROY {
+sub flush_all_fibres {
     my $self = shift;
     $self->_flush_fibre($_) for keys %{$self->{fibres}};
 }
+
+sub DESTROY { goto &flush_all_fibres }
 
 sub AUTOLOAD {
     my $self = shift;
